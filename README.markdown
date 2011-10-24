@@ -2,6 +2,38 @@
 
 Demostrar que la implementación de una UI sobre una API es simple. 
 
+# Requerimientos
+
+Son pocos y básicos: 
+
+* Javascript
+
+* Browser (Chrome, Firefox)
+
+* Conexión a Internet
+
+Se ejecuta así: 
+
+    [etagwerker@home chartly]$ open index.html
+    
+(Abriendo el index.html en el browser)
+
+# Sobre el Código
+
+Toda la información proviene de la API del [Censo 2010](http://censo.heroku.com) (Argentina)
+
+Utiliza Backbone.js, HTML y CSS ([Bootstrap](http://twitter.github.com/bootstrap))
+
+# Contribuciones
+
+Si querés contribuir: 
+
+1. fork
+
+2. commit
+
+3. pull request
+
 # Licencia
 
 Copyright (C) 2011 by Ernesto Tagwerker
