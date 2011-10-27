@@ -3,9 +3,18 @@ $(document).ready(
   function() {
     
     window.Population = Backbone.Model.extend({
+      tidy_id: function(_id) { 
+        _id = _id.replace('í','i');
+        _id = _id.replace('ú','u');
+        _id = _id.replace('ó','o');
+        _id = _id.replace('é','e');
+        _id = _id.replace('á','a');
+        return _id;                                
+      },
+      
       url: function() {
         var area = this.get('area');
-        return 'http://censo.heroku.com/poblacion/' + area.id + "/totales?callback=?";
+        return 'http://censo.heroku.com/poblacion/' + this.tidy_id(area.id) + "/totales?callback=?";
       }, 
       
       parse: function(response) {
@@ -44,12 +53,28 @@ $(document).ready(
     window.PopulationView = Backbone.View.extend({
       template: _.template($('#population-template').html()),
       
+      population_graph: function(population) {
+        var data = new google.visualization.DataTable();
+        data.addColumn('string', 'Sexo');
+        data.addColumn('number', 'Personas');
+        data.addRows(2);
+        data.setValue(0, 0, 'Varones');
+        data.setValue(0, 1, population.get('total_varones'));
+        data.setValue(1, 0, 'Mujeres');
+        data.setValue(1, 1, population.get('total_mujeres'));
+
+        // Create and draw the visualization.
+        var chart = new google.visualization.PieChart(document.getElementById('population-graph'));
+        chart.draw(data, {width: 450, height: 300, title: 'Personas en San Nicolás'});
+      },
+      
       initialize: function() {
         var v = this;
         var p = new Population({area: this.model, view: v});
         p.fetch({success: function(){
             v.model.set({population: p});
-            $("div#population-detail").html(v.render().el)
+            $("div#population-detail").html(v.render().el);
+            v.population_graph(p);
           }
         });
       }, 

@@ -1,4 +1,35 @@
 .container-fluid {
   margin-top: 50px;  
 }
+
+.container-fluid > .sidebar {
+  width: 230px;
+  text-align: right;
+  border-right: solid 1px;
+  padding-right: 6px;
+}
+
+/* Provincias#index */
+
+div#population-detail {
+  padding-left: 20px;
+}
   
+ul#provincias-list {
+  list-style: none;
+}
+
+ul#provincias-list li {
+  padding-bottom: 5px;  
+}
+
+ul#provincias-list li:hover {
+  cursor:pointer;
+  text-decoration:underline;
+}
+
+/* Provincias#show */
+
+#population-graph {
+  float:left;
+}
