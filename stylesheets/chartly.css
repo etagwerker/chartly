@@ -1,5 +1,19 @@
+/* General */
+
+.left {
+  float:left;
+}
+
+/* Containers */
+
 .container-fluid {
   margin-top: 50px;  
+  
+}
+
+.container-fluid > .content {
+  float: left;
+  margin-left: 10px;
 }
 
 .container-fluid > .sidebar {
@@ -30,6 +44,13 @@ ul#provincias-list li:hover {
 
 /* Provincias#show */
 
-#population-graph {
-  float:left;
+/* Departamentos#index */
+
+ul#departamentos-list {
+  border-right: 1px solid;
+  clear: left;
+  list-style: none outside none;
+  padding-right: 6px;
+  text-align: right;
+  width: 110px;  
 }

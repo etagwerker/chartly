@@ -21,13 +21,19 @@
     </li>
   </script>
   
+  <script type="text/template" id="departamento-template">
+    <li id="<%= id %>" class="departamento">
+      <%= nombre %>
+    </li>
+  </script>
+  
   <script type="text/template" id="population-template">
     <h1>
       <%= area.attributes['nombre'] %>
     </h1>
-    <div id="population-graph">
+    <div id="population-graph" class="left">
     </div>
-    <div class="population">
+    <div class="population left">
       <h2>Hombres</h2>
       <span class="hombres">
         <%= total_varones %>
@@ -41,6 +47,9 @@
         <%= total_varones + total_mujeres %>
       </span>    
     </div>
+    <h2>Localidades</h2>
+    <ul id="departamentos-list" class="left">        
+    </ul>
   </script>
   
   
