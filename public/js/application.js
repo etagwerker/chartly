@@ -11,10 +11,9 @@ $(document).ready(
     }; 
     
     window.Population = Backbone.Model.extend({
-      
       url: function() {
         var area = this.get('area');
-        return 'http://censo.heroku.com/poblacion/' + tidy_id(area.id) + "/totales?callback=?";
+        return area.population_url();
       }, 
       
       parse: function(response) {
@@ -23,16 +22,31 @@ $(document).ready(
     }); 
     
     window.Provincia = Backbone.Model.extend({
+      formatted_name: function() {
+        return this.get('nombre');
+      }, 
+      
+      population_url: function() {
+        return 'http://censo.heroku.com/poblacion/' + tidy_id(this.get('id')) + "/totales?callback=?";  
+      }, 
+      
+      type: function() {
+        return 'provincia';
+      }, 
       
       departamentos: function() {
-        if (this.get('departamentos')) {
+        if (this.get('departamentos')) { 
+          this.get('departamentos').each(window.DepartamentosPartialView.addOne);
           return this.get('departamentos');
         } else {
           var provincia = this;
           var collection = new DepartamentosCollection();
           collection.fetch({success: function() {
               provincia.set({departamentos: collection});
-              window.DepartamentosPartialView.addAll();
+              collection.each(function(departamento) {
+                departamento.set({provincia: provincia});
+              });
+              collection.each(window.DepartamentosPartialView.addOne);
             }
           });
         }
@@ -41,7 +55,25 @@ $(document).ready(
     });
     
     window.Departamento = Backbone.Model.extend({
-
+      formatted_name: function() {
+        var pcia = this.get('provincia')
+        var name = this.get('nombre');
+        var id = pcia.get('id');
+        if (id == "ciudad_autónoma_de_buenos_aires") {
+          return "Comuna " + name;
+        } else {
+          return name;
+        }
+      },
+      
+      population_url: function() {
+        var pcia = this.get('provincia');
+        return 'http://censo.heroku.com/poblacion/' + tidy_id(pcia.get('id')) + '/' + tidy_id(this.get('id')) + "/totales?callback=?";  
+      },
+      
+      type: function() {
+        return 'departamento';
+      }
     });    
 
     // class DepartamentosCollection
@@ -67,8 +99,59 @@ $(document).ready(
     // object Departamentos
     window.Departamentos = new DepartamentosCollection();
     
-    window.PopulationView = Backbone.View.extend({
-      template: _.template($('#population-template').html()),
+    window.ProvinciaPopulationView = Backbone.View.extend({
+      population_graph: function(population) {
+        var data = new google.visualization.DataTable();
+        data.addColumn('string', 'Sexo');
+        data.addColumn('number', 'Personas');
+        data.addRows(2);
+        data.setValue(0, 0, 'Varones');
+        data.setValue(0, 1, population.get('total_varones'));
+        data.setValue(1, 0, 'Mujeres');
+        data.setValue(1, 1, population.get('total_mujeres'));
+
+        // Create and draw the visualization.
+        var chart = new google.visualization.PieChart(document.getElementById(this.model.type() + '-population-graph'));
+        var area = population.get('area');
+        chart.draw(data, {width: 450, height: 300, title: 'Personas en ' + area.get('nombre') });
+      },
+      
+      render: function() {
+        var population = this.model.get('population');
+        $(this.el).html(this.template(population.toJSON()));
+        return this;
+      }, 
+      
+      initialize: function() {
+        var v = this;
+        var p = new Population({area: this.model, view: v});
+        p.fetch({success: function(){
+            v.model.set({population: p});
+            $("div#" + v.model.type() + "-population-detail").html(v.render().el);
+            v.population_graph(p);
+            if (v.model.type() == "provincia") {
+              window.DepartamentosPartialView = new DepartamentosView({model: v.model});  
+            }
+          }
+        });
+      },
+      
+      template: _.template($('#provincia-population-template').html())
+    });
+    
+    window.DepartamentoPopulationView = Backbone.View.extend({
+      template: _.template($('#departamento-population-template').html()), 
+      
+      initialize: function() {
+        var v = this;
+        var p = new Population({area: this.model, view: v});
+        p.fetch({success: function(){
+            v.model.set({population: p});
+            $("div#" + v.model.type() + "-population-detail").html(v.render().el);
+            v.population_graph(p);
+          }
+        });
+      },
       
       population_graph: function(population) {
         var data = new google.visualization.DataTable();
@@ -81,47 +164,43 @@ $(document).ready(
         data.setValue(1, 1, population.get('total_mujeres'));
 
         // Create and draw the visualization.
-        var chart = new google.visualization.PieChart(document.getElementById('population-graph'));
+        var chart = new google.visualization.PieChart(document.getElementById(this.model.type() + '-population-graph'));
         var area = population.get('area');
         chart.draw(data, {width: 450, height: 300, title: 'Personas en ' + area.get('nombre') });
       },
-      
-      initialize: function() {
-        var v = this;
-        var p = new Population({area: this.model, view: v});
-        p.fetch({success: function(){
-            v.model.set({population: p});
-            $("div#population-detail").html(v.render().el);
-            v.population_graph(p);
-            window.DepartamentosPartialView = new DepartamentosView({model: v.model});            
-          }
-        });
-      }, 
       
       render: function() {
         var population = this.model.get('population');
         $(this.el).html(this.template(population.toJSON()));
         return this;
       }
-      
     });
     
     window.DepartamentoView = Backbone.View.extend({
       template: _.template($('#departamento-template').html()),
+
+      events: {
+        "click"         : "select"
+      },
       
       initialize: function() {
         
       },
 
+      select: function() {
+        window.CurrentDepartamento = this.model;
+        this.model.set({selected: true});
+        new DepartamentoPopulationView({model: this.model});
+      },
+
       render: function() {
-        $(this.el).html(this.template(this.model.toJSON()));
+        $(this.el).html(this.template({formatted_name: this.model.formatted_name()}));
         return this;
       }
       
     });
     
     window.ProvinciaView = Backbone.View.extend({
-
       template: _.template($('#provincia-template').html()),
       
       events: {
@@ -135,7 +214,7 @@ $(document).ready(
       select: function() {
         window.CurrentProvincia = this.model;
         this.model.set({selected: true});
-        new PopulationView({model: this.model});
+        new ProvinciaPopulationView({model: this.model});
       },
       
       render: function() {
@@ -148,6 +227,7 @@ $(document).ready(
     
     window.DepartamentosView = Backbone.View.extend({      
       initialize: function() {
+        $("ul#departamentos-list").html("");
         this.model.departamentos();
       },
 
@@ -156,12 +236,6 @@ $(document).ready(
       addOne: function(departamento) {
         var view = new DepartamentoView({model: departamento});
         $("ul#departamentos-list").append(view.render().el);
-      },
-
-      // Add all items in the **Provincias** collection at once.
-      addAll: function() {
-        var departamentos = this.model.departamentos();
-        departamentos.each(this.addOne);
       }
     });
     

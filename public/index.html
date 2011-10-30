@@ -22,27 +22,49 @@
   </script>
   
   <script type="text/template" id="departamento-template">
-    <li id="<%= id %>" class="departamento">
-      <%= nombre %>
+    <li class="departamento">
+      <%= formatted_name %>
     </li>
   </script>
-  
-  <script type="text/template" id="population-template">
+  <script type="text/template" id="departamento-population-template">
     <h1>
-      <%= area.attributes['nombre'] %>
+      <%= area.formatted_name() %>
     </h1>
-    <div id="population-graph" class="left">
+    <div id="<%= area.type() %>-population-graph" class="left">
     </div>
     <div class="population left">
-      <h2>Hombres</h2>
+      <h3>Hombres</h3>
       <span class="hombres">
         <%= total_varones %>
       </span>
-      <h2>Mujeres</h2>
+      <h3>Mujeres</h3>
       <span class="mujeres">
         <%= total_mujeres %>
       </span>
-      <h2>Total</h2>
+      <h3>Total</h3>
+      <span class="total">
+        <%= total_varones + total_mujeres %>
+      </span>    
+    </div>
+    
+  </script>
+  
+  <script type="text/template" id="provincia-population-template">
+    <h1>
+      <%= area.formatted_name() %>
+    </h1>
+    <div id="<%= area.type() %>-population-graph" class="left">
+    </div>
+    <div class="population left">
+      <h3>Hombres</h3>
+      <span class="hombres">
+        <%= total_varones %>
+      </span>
+      <h3>Mujeres</h3>
+      <span class="mujeres">
+        <%= total_mujeres %>
+      </span>
+      <h3>Total</h3>
       <span class="total">
         <%= total_varones + total_mujeres %>
       </span>    
@@ -50,8 +72,9 @@
     <h2>Localidades</h2>
     <ul id="departamentos-list" class="left">        
     </ul>
+    <div id="departamento-population-detail" class="left">
+    </div>
   </script>
-  
   
 </head>
 <body>
@@ -72,10 +95,7 @@
       </ul>
     </div>
     <div class="content">
-      <div id="population-detail">
-        
-      </div>
-      <div id="visualization">
+      <div id="provincia-population-detail">
         
       </div>
 
