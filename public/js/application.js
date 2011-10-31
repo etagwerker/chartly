@@ -22,12 +22,12 @@ $(document).ready(
     }); 
     
     window.Provincia = Backbone.Model.extend({
-      formatted_name: function() {
-        return this.get('nombre');
-      }, 
-      
       population_url: function() {
         return 'http://censo.heroku.com/poblacion/' + tidy_id(this.get('id')) + "/totales?callback=?";  
+      },
+      
+      formatted_name: function() {
+        return this.get('nombre');
       }, 
       
       type: function() {
@@ -55,6 +55,11 @@ $(document).ready(
     });
     
     window.Departamento = Backbone.Model.extend({
+      population_url: function() {
+        var pcia = this.get('provincia');
+        return 'http://censo.heroku.com/poblacion/' + tidy_id(pcia.get('id')) + '/' + tidy_id(this.get('id')) + "/totales?callback=?";  
+      },
+      
       formatted_name: function() {
         var pcia = this.get('provincia')
         var name = this.get('nombre');
@@ -64,11 +69,6 @@ $(document).ready(
         } else {
           return name;
         }
-      },
-      
-      population_url: function() {
-        var pcia = this.get('provincia');
-        return 'http://censo.heroku.com/poblacion/' + tidy_id(pcia.get('id')) + '/' + tidy_id(this.get('id')) + "/totales?callback=?";  
       },
       
       type: function() {
@@ -261,8 +261,6 @@ $(document).ready(
     
     
     window.AppView = Backbone.View.extend({
-      // Instead of generating a new element, bind to the existing skeleton of
-      // the App already present in the HTML.
       el: $("#charts-app"),
 
       initialize: function() {
