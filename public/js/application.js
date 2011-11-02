@@ -178,6 +178,8 @@ $(document).ready(
     
     window.DepartamentoView = Backbone.View.extend({
       template: _.template($('#departamento-template').html()),
+      tagName: "li",
+      className: "departamento", 
 
       events: {
         "click"         : "select"
@@ -202,6 +204,8 @@ $(document).ready(
     
     window.ProvinciaView = Backbone.View.extend({
       template: _.template($('#provincia-template').html()),
+      className: "provincia",
+      tagName: "li", 
       
       events: {
         "click"         : "select"
